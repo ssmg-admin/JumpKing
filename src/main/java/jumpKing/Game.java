@@ -26,7 +26,6 @@ public class Game extends JFrame {
 
         container.add(menuPanel, CARD_MENU);
         add(container);
-
         layout.show(container, CARD_MENU);
     }
 
