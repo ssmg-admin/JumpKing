@@ -1,86 +1,48 @@
 package jumpKing;
 
+import jumpKing.entita.Entita;
+import jumpKing.entita.platform.Platform;
+import jumpKing.entita.player.Player;
+import jumpKing.input.KeyInput;
+import jumpKing.input.MouseInput;
+
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 
-/**
- * GameFrame je hlavní herní panel.
- * Obsahuje:
- * - herní smyčku (Timer)
- * - delta-time výpočet
- * - vstup z klávesnice
- * - vykreslování herních objektů
- */
-class GameFrame extends JPanel implements MouseListener {
+class GameFrame extends JPanel {
 
-    Rectangle player = new Rectangle(400,400,64,64);
-    Rectangle platrofma =  new Rectangle(0,200,300,20);
+    private static final int TIMER_DELAY_MS = 16;
 
-    /**
-     * Konstruktor GameFrame:
-     * - aktivuje vstup z klávesnice
-     * - spustí herní smyčku (Timer)
-     */
+    private final MouseInput mouseInput = new MouseInput();
+    private final KeyInput keyInput = new KeyInput();
+
+    private Timer timer;
+    private Player player = new Player(400, 400, 64, 64,true);
+    private Platform platrofm = new Platform(0, 200, 300, 20,true);
+
+
     public GameFrame() {
+        addMouseListener(mouseInput);
+        addKeyListener(keyInput);
 
-        addMouseListener(this);
-        // Panel musí být fokusovatelný, aby mohl přijímat klávesy
-        setFocusable(true);
-
-        /**
-         * Herní smyčka – Timer se spustí každých cca 16 ms (≈ 60 FPS)
-         * Timer volá anonymní funkci (lambda) e -> { ... }
-         */
-        new Timer(16, e -> {
-
-            if (player.y < 500){
-                player.y = player.y+5;
-            }
-
-
+        timer = new Timer(TIMER_DELAY_MS, e -> {
+            updateGame();
             repaint();
-
-        }).start();
+        });
     }
 
-    /**
-     * paintComponent je metoda Swingu, která vykresluje grafiku.
-     * Každý snímek se zavolá po repaint().
-     */
+    public void startGame() {
+        timer.start();
+    }
+
+    public void updateGame(){
+
+    }
+
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
-        g.setColor(Color.RED);
-        g.fillRect(platrofma.x, platrofma.y, platrofma.width, platrofma.height);
-        g.setColor(Color.GREEN);
-        g.fillRect(player.x, player.y, player.width, player.height);
-
-    }
-
-    @Override
-    public void mouseClicked(MouseEvent e) {
-        player.y = player.y - 100;
-    }
-
-    @Override
-    public void mousePressed(MouseEvent e) {
-
-    }
-
-    @Override
-    public void mouseReleased(MouseEvent e) {
-
-    }
-
-    @Override
-    public void mouseEntered(MouseEvent e) {
-
-    }
-
-    @Override
-    public void mouseExited(MouseEvent e) {
-
+        player.draw(g);
+        platrofm.draw(g);
     }
 }

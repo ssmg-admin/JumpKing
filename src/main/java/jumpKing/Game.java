@@ -1,44 +1,47 @@
 package jumpKing;
 
 import javax.swing.*;
+import java.awt.*;
 
-/**
- * Game je hlavní okno celé aplikace.
- * Vytváří JFrame, nastavuje jeho vlastnosti a přidává do něj GameFrame,
- * což je panel se skutečnou hrou (logika, animace, vykreslování).
- */
 public class Game extends JFrame {
 
-    /**
-     * Konstruktor vytvoří herní okno a nastaví jeho základní parametry.
-     */
+    private static final String CARD_MENU = "menu";
+    private static final String CARD_GAME = "game";
+
+    private CardLayout layout;
+    private JPanel container;
+
     public Game() {
-        // Titulek okna
         setTitle("Game Window");
-
-        // Velikost okna (šířka x výška)
-        setSize(800, 600);
-
-        // Zavření okna ukončí celou aplikaci
+        setSize(1280, 900);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
-
-        // Umístí okno doprostřed obrazovky
         setLocationRelativeTo(null);
 
-        // Vytvoříme hlavní herní panel (obsahuje smyčku, vykreslování,…)
-        GameFrame gameFrame = new GameFrame();
+        layout = new CardLayout();
+        container = new JPanel(layout);
 
-        // Přidáme GameFrame do JFrame
-        add(gameFrame);
+        MenuPanel menuPanel = new MenuPanel(() -> {
+            startGame();
+        });
+
+        container.add(menuPanel, CARD_MENU);
+        add(container);
+
+        layout.show(container, CARD_MENU);
     }
 
-    /**
-     * Hlavní metoda – start aplikace.
-     * SwingUtilities.invokeLater zajistí, že GUI poběží v Java EDT vláknu.
-     */
+    private void startGame() {
+        GameFrame gameFrame = new GameFrame();
+
+        container.add(gameFrame, CARD_GAME);
+        layout.show(container, CARD_GAME);
+
+        gameFrame.requestFocusInWindow();
+        gameFrame.startGame();
+    }
+
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
-            // Vytvoříme objekt Game a zobrazíme okno
             new Game().setVisible(true);
         });
     }
