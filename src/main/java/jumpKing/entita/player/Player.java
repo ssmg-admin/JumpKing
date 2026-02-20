@@ -3,6 +3,7 @@ package jumpKing.entita.player;
 import jumpKing.GameFrame;
 import jumpKing.entita.Entita;
 import jumpKing.input.KeyInput;
+import jumpKing.tools.CollisionTools;
 import jumpKing.tools.PositionTools;
 
 import java.awt.*;
@@ -54,13 +55,20 @@ public class Player extends Entita {
 
     public void updatePlayer(){
 
-
         if (gameFrame.getKeyInput().isKeyPressed(KeyEvent.VK_W)){
             setY(getY() - speed);
         }
 
         if (gameFrame.getKeyInput().isKeyPressed(KeyEvent.VK_S)){
-            setY(getY() + speed);
+            Player player_temp = gameFrame.getPlayer();
+            player_temp.setY(getY() + speed);
+
+            if (!CollisionTools.collisionRectangle(gameFrame.getPlatrofm(),  player_temp)){
+                setY(getY() + speed);
+                System.out.println("s");
+            }
+
+
         }
 
         if (gameFrame.getKeyInput().isKeyPressed(KeyEvent.VK_A)){
@@ -70,6 +78,17 @@ public class Player extends Entita {
         if (gameFrame.getKeyInput().isKeyPressed(KeyEvent.VK_D)){
             setX(getX() + speed);
         }
+
+
+
+
+        if (gameFrame.getPlayer().getY() < 700 && !gameFrame.getKeyInput().isKeyPressed(KeyEvent.VK_W)){
+
+            if (!CollisionTools.collisionRectangle(gameFrame.getPlayer(), gameFrame.getPlatrofm())){
+                gameFrame.getPlayer().setY(getY() + speed);
+            }
+        }
+
 
 
 
