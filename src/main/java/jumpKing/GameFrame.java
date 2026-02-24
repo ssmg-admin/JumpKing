@@ -1,98 +1,118 @@
-package jumpKing.entita.player;
+package jumpKing;
 
-import jumpKing.GameFrame;
 import jumpKing.entita.Entita;
+import jumpKing.entita.platform.Platform;
+import jumpKing.entita.player.Player;
 import jumpKing.input.KeyInput;
+import jumpKing.input.MouseInput;
 import jumpKing.tools.CollisionTools;
 import jumpKing.tools.PositionTools;
 
+import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 
 /**
- * Player entity rendered as a rectangle.
- * In a more complete game this could be replaced with sprites or animations.
+ * Main in-game panel that hosts gameplay objects and the update/render loop.
+ * It wires input listeners once and uses a Swing Timer to repeatedly call
+ * update logic and repaint on the Swing EDT (Event Dispatch Thread).
  *
- * How it works: draw() is called from GameFrame.paintComponent(...) every frame.
- * The player renders itself based on its current position and size stored in Entita.
+ * How it works (high level):
+ * - startGame() starts a Swing Timer.
+ * - Every TIMER_DELAY_MS ms the timer calls updateGame().
+ * - After updating, we call repaint() to request a redraw.
+ * - Swing later calls paintComponent(Graphics) where we draw entities.
+ *
+ * Important: Timer events and painting both happen on the Swing EDT, so you must
+ * keep updateGame() fast (do not sleep, do not do heavy blocking work),
+ * otherwise the UI will freeze.
  */
-public class Player extends Entita {
+public class GameFrame extends JPanel {
+
+    // Timer interval in milliseconds; 16 ms targets roughly 60 FPS.
+    private static final int TIMER_DELAY_MS = 16;
+
+    // Input listeners are attached to this panel to capture user controls.
+    private final MouseInput mouseInput = new MouseInput();
+    private final KeyInput keyInput = new KeyInput();
+
+    // Swing Timer drives the game loop on the EDT to keep rendering thread-safe.
+    private Timer timer;
+    // Game entities that will be updated and rendered each frame.
+    private Player player = new Player(400, 400, 64, 64,true, this);
+    private Platform platrofm = new Platform(0, 200, 300, 50,true);
 
 
     /**
-     * Creates a player at the given position and size.
-     *
-     * @param x left position in pixels.
-     * @param y top position in pixels.
-     * @param width player width in pixels.
-     * @param height player height in pixels.
-     * @param isAlive active state flag.
+     * Creates the game panel, attaches input listeners, and prepares the loop.
+     * This works by registering MouseInput/KeyInput on this JPanel and
+     * creating a Swing Timer that fires every TIMER_DELAY_MS to call
+     * updateGame() followed by repaint(), both on the EDT.
      */
-    private GameFrame gameFrame;
-    private int speed = 5;
-    public Player(int x, int y, int width, int height, boolean isAlive, GameFrame gameFrame) {
-        super(x, y, width, height, isAlive);
-        this.gameFrame = gameFrame;
+    public GameFrame() {
+        // A component must be focusable to receive KeyListener events.
+        // We request focus when the game starts (see Game.startGame()).
+        setFocusable(true);
+        // Prevents Swing from using TAB/Shift+TAB for focus traversal, which can
+        // otherwise "steal" key events in games.
+        setFocusTraversalKeysEnabled(false);
 
+
+        addMouseListener(mouseInput);
+        addKeyListener(keyInput);
+
+        // Game loop: update state first, then request a repaint.
+        timer = new Timer(TIMER_DELAY_MS, e -> {
+            updateGame();
+            repaint();
+        });
     }
 
     /**
-     * Draws the player as a filled green rectangle.
-     * The Graphics context draws directly onto the panel in pixel coordinates.
+     * Starts the Swing Timer so the game begins updating and rendering.
+     * Internally, Timer schedules an ActionEvent at fixed intervals on the EDT.
+     */
+    public void startGame() {
+        timer.start();
+    }
+
+    /**
+     * Updates the game state for a single frame.
+     * This method should update positions, handle input, and resolve collisions.
+     * Because the Swing Timer calls it on the EDT, it stays in sync with rendering.
+     */
+    private void updateGame(){
+        player.updatePlayer();
+    }
+
+    /**
+     * Renders the current game state.
+     * repaint() queues a paint request; Swing then calls paintComponent on the EDT.
+     * Always call super.paintComponent to clear the background before drawing.
      *
-     * @param g graphics context.
+     * @param g Graphics context provided by Swing for drawing.
      */
     @Override
-    public void draw(Graphics g){
-        // Simple placeholder render so we can see the player on screen.
-        g.setColor(Color.green);
-        g.fillRect(getX(),getY(),getWidth(),getHeight());
-
-        double vzdalenost = PositionTools.distanceToEntita(this, gameFrame.getPlatrofm());
-        g.drawString(String.valueOf(vzdalenost),50,100);
-
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        // Draw entities in the correct order so they appear on screen.
+        player.draw(g);
+        platrofm.draw(g);
     }
 
-    public void updatePlayer(){
+    public Platform getPlatrofm() {
+        return platrofm;
+    }
 
-        Player player_temp = new Player(getX(),getY(),getWidth(),getHeight(),true,gameFrame);
+    public KeyInput getKeyInput() {
+        return keyInput;
+    }
 
-        if (gameFrame.getKeyInput().isKeyPressed(KeyEvent.VK_W)){
-            player_temp.setY(getY() - speed);
+    public MouseInput getMouseInput() {
+        return mouseInput;
+    }
 
-            if (!CollisionTools.collisionRectangle(gameFrame.getPlatrofm(),  player_temp)){
-                setY(getY() - speed);
-            }
-        }
-
-        if (gameFrame.getKeyInput().isKeyPressed(KeyEvent.VK_S)){
-            player_temp.setY(getY() + speed);
-
-            if (!CollisionTools.collisionRectangle(gameFrame.getPlatrofm(),  player_temp)){
-                setY(getY() + speed);
-            }
-        }
-
-        if (gameFrame.getKeyInput().isKeyPressed(KeyEvent.VK_A)){
-            setX(getX() - speed);
-        }
-
-        if (gameFrame.getKeyInput().isKeyPressed(KeyEvent.VK_D)){
-            setX(getX() + speed);
-        }
-
-
-
-
-        if (gameFrame.getPlayer().getY() < 700 && !gameFrame.getKeyInput().isKeyPressed(KeyEvent.VK_W)){
-
-            if (!CollisionTools.collisionRectangle(gameFrame.getPlayer(), gameFrame.getPlatrofm())){
-                gameFrame.getPlayer().setY(getY() + speed);
-            }
-        }
-
-
-
-
+    public Player getPlayer() {
+        return player;
     }
 }
