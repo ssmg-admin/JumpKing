@@ -55,20 +55,22 @@ public class Player extends Entita {
 
     public void updatePlayer(){
 
+        Player player_temp = new Player(getX(),getY(),getWidth(),getHeight(),true,gameFrame);
+
         if (gameFrame.getKeyInput().isKeyPressed(KeyEvent.VK_W)){
-            setY(getY() - speed);
+            player_temp.setY(getY() - speed);
+
+            if (!CollisionTools.collisionRectangle(gameFrame.getPlatrofm(),  player_temp)){
+                setY(getY() - speed);
+            }
         }
 
         if (gameFrame.getKeyInput().isKeyPressed(KeyEvent.VK_S)){
-            Player player_temp = gameFrame.getPlayer();
             player_temp.setY(getY() + speed);
 
             if (!CollisionTools.collisionRectangle(gameFrame.getPlatrofm(),  player_temp)){
                 setY(getY() + speed);
-                System.out.println("s");
             }
-
-
         }
 
         if (gameFrame.getKeyInput().isKeyPressed(KeyEvent.VK_A)){
