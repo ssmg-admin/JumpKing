@@ -48,13 +48,11 @@ public class Player extends Entita {
         g.setColor(Color.green);
         g.fillRect(getX(),getY(),getWidth(),getHeight());
 
-        double vzdalenost = PositionTools.distanceToEntita(this, gameFrame.getPlatrofm());
-        g.drawString(String.valueOf(vzdalenost),50,100);
 
     }
 
     public void updatePlayer(){
-
+        /*
         Player player_temp = new Player(getX(),getY(),getWidth(),getHeight(),true,gameFrame);
 
         if (gameFrame.getKeyInput().isKeyPressed(KeyEvent.VK_W)){
@@ -81,9 +79,6 @@ public class Player extends Entita {
             setX(getX() + speed);
         }
 
-
-
-
         if (gameFrame.getPlayer().getY() < 700 && !gameFrame.getKeyInput().isKeyPressed(KeyEvent.VK_W)){
 
             if (!CollisionTools.collisionRectangle(gameFrame.getPlayer(), gameFrame.getPlatrofm())){
@@ -92,7 +87,7 @@ public class Player extends Entita {
         }
 
 
-
+        */
 
     }
 }
